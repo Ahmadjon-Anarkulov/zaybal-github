@@ -1,0 +1,49 @@
+name: Abyss Hell Auto-Commit
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'          # каждые 5 минут
+  workflow_dispatch:               # можно запустить вручную кнопкой
+
+jobs:
+  update-abyss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "Nedlyatebya"
+          git config user.email "nedlyatebya@example.com"  # замени на свой email
+
+      - name: Update abyss/README.yml
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_ID=$(git rev-parse HEAD)
+          # Считаем количество коммитов в ветке (примерно execution count)
+          EXEC_COUNT=$(git rev-list --count HEAD)
+          
+          # Формируем новый контент
+          cat > abyss/README.yml << EOF
+          ---
+          abyss: "The void is watching"
+          commit_id: "$COMMIT_ID"
+          execution_count: $EXEC_COUNT
+          last_timestamp: "$TIMESTAMP"
+          ascii_art: |
+            ╔════════════════════════════╗
+            ║     ABYSS GROWING DEEPER   ║
+            ╚════════════════════════════╝
+            Commit $EXEC_COUNT | $TIMESTAMP
+            The hell never stops.
+          ---
+          EOF
+
+      - name: Commit and push changes
+        run: |
+          git add abyss/README.yml
+          git commit -m "Abyss deepens | Exec $EXEC_COUNT | $TIMESTAMP" || echo "No changes to commit"
+          git push
