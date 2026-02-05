@@ -1,0 +1,48 @@
+name: Zaybal Auto-Commit Abyss
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'          # каждые 5 минут
+  workflow_dispatch:               # ручной запуск кнопкой
+
+jobs:
+  abyss-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup git config
+        run: |
+          git config user.name "Ahmadjon-Anarkulov"
+          git config user.email "ahmadjon.anarkulov@example.com"  # поменяй на свой реальный email
+
+      - name: Update abyss/README.yml
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_ID=$(git rev-parse HEAD)
+          EXEC_COUNT=$(git rev-list --count HEAD)
+
+          cat > abyss/README.yml << 'EOF'
+          ---
+          title: "Zaybal Abyss Tracker"
+          status: "The hell is growing"
+          commit_id: "$COMMIT_ID"
+          execution_count: $EXEC_COUNT
+          last_run: "$TIMESTAMP"
+          ascii: |
+            ╔════════════════════════════╗
+            ║     ZAYBAL DEEPENS         ║
+            ╚════════════════════════════╝
+            Commit #$EXEC_COUNT | $TIMESTAMP
+            No mercy, only commits.
+          ---
+          EOF
+
+      - name: Commit & push
+        run: |
+          git add abyss/README.yml
+          git commit -m "Zaybal abyss deepens | Exec $EXEC_COUNT | $TIMESTAMP" || echo "Nothing to commit"
+          git push || echo "Push failed but ok"
