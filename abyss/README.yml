@@ -1,0 +1,32 @@
+name: Auto Commit Hell
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # каждые 5 минут
+  workflow_dispatch:        # можно запускать вручную
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup git
+        run: |
+          git config user.name "Your Name"
+          git config user.email "your@email.com"
+
+      - name: Update counter file
+        run: |
+          echo "Last update: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> counter.txt
+          echo "Commits so far: $(( $(git rev-list --count HEAD) ))" >> counter.txt
+          # или любой другой файл, который ты хочешь обновлять
+
+      - name: Commit & push
+        run: |
+          git add .
+          git commit -m "Auto-hell commit $(date -u +'%Y-%m-%d %H:%M:%S') - keep going" || echo "No changes"
+          git push
